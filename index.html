@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIDSNA シッター 募集機能プロトタイプ</title>
+    <title>KIDSNA シッター 募集機能プロトタイプ - 改修版</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,6 +21,38 @@
             font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif;
             background-color: #f3f4f6;
         }
+        /* カスタムチェックボックス：塗りつぶしCDA250、マーク白 */
+        .custom-checkbox {
+            appearance: none;
+            background-color: #fff;
+            margin: 0;
+            font: inherit;
+            color: #fff;
+            width: 1.25em;
+            height: 1.25em;
+            border: 2px solid #CDA250;
+            border-radius: 0.25em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: background-color 120ms ease-in-out;
+        }
+        .custom-checkbox::before {
+            content: "";
+            width: 0.65em;
+            height: 0.65em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #fff; 
+            transform-origin: bottom left;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        .custom-checkbox:checked {
+            background-color: #CDA250; 
+        }
+        .custom-checkbox:checked::before {
+            transform: scale(1);
+        }
     </style>
 </head>
 <body>
@@ -30,8 +62,7 @@
         const { useState, useEffect } = React;
 
         // -----------------------------------------------------------------------------
-        // アイコンコンポーネント定義 (Lucide Icons互換)
-        // 外部ライブラリ依存をなくすため、使用するアイコンをSVGとして直接定義
+        // アイコンコンポーネント
         // -----------------------------------------------------------------------------
         const IconBase = ({ children, size = 24, color = "currentColor", fill = "none", className = "" }) => (
             <svg 
@@ -75,26 +106,6 @@
                 <line x1="3" x2="21" y1="10" y2="10" />
             </IconBase>
         );
-        const Info = (props) => (
-            <IconBase {...props}>
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 16v-4" />
-                <path d="M12 8h.01" />
-            </IconBase>
-        );
-        const CheckCircle = (props) => (
-            <IconBase {...props}>
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-            </IconBase>
-        );
-        const AlertCircle = (props) => (
-            <IconBase {...props}>
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" x2="12" y1="8" y2="12" />
-                <line x1="12" x2="12.01" y1="16" y2="16" />
-            </IconBase>
-        );
         const ChevronRight = (props) => (
             <IconBase {...props}>
                 <path d="m9 18 6-6-6-6" />
@@ -120,15 +131,6 @@
                 <circle cx="12" cy="14" r="8" />
             </IconBase>
         );
-        const FileText = (props) => (
-            <IconBase {...props}>
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" x2="8" y1="13" y2="13" />
-                <line x1="16" x2="8" y1="17" y2="17" />
-                <line x1="10" x2="8" y1="9" y2="9" />
-            </IconBase>
-        );
         const Users = (props) => (
             <IconBase {...props}>
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -150,12 +152,32 @@
                 <circle cx="12" cy="7" r="4" />
             </IconBase>
         );
-        const Hourglass = (props) => (
+        const RecruitMore = (props) => (
             <IconBase {...props}>
-                <path d="M5 22h14" />
-                <path d="M5 2h14" />
-                <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
-                <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+                <circle cx="9" cy="9" r="6" />
+                <path d="m14 14 4 4" />
+                <path d="M15 8h4" />
+                <path d="M17 6v4" />
+            </IconBase>
+        );
+        const Info = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+            </IconBase>
+        );
+        const CheckCircle = (props) => (
+            <IconBase {...props}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+            </IconBase>
+        );
+        const AlertCircle = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" x2="12" y1="8" y2="12" />
+                <line x1="12" x2="12.01" y1="16" y2="16" />
             </IconBase>
         );
 
@@ -163,17 +185,16 @@
         // デザイン定数
         // -----------------------------------------------------------------------------
         const COLORS = {
-            main: '#CDA250',       // ブランドカラー（ゴールド系）
-            sub: '#F5EFDE',        // 薄い背景色
-            text: '#4B2F16',       // テキスト色（ダークブラウン）
+            main: '#CDA250',
+            sub: '#F5EFDE',
+            text: '#4B2F16',
             white: '#FFFFFF',
-            border: '#E5E7EB',     // 薄いグレーのボーダー
-            
-            // 案件タイプの色分け
-            regularMain: '#6FB8C8', // 青系ベース
+            border: '#E5E7EB',
+            positive: '#059669',
+            positiveBg: '#F0FDF4', 
+            regularMain: '#6FB8C8',
             regularBg: '#E2F1F4',
-            
-            singleMain: '#ECAD99',  // ピンク系ベース
+            singleMain: '#ECAD99',
             singleBg: '#FDF3F0',
         };
 
@@ -182,173 +203,110 @@
         };
 
         // -----------------------------------------------------------------------------
-        // モックデータ (10件 - 詳細テキスト追加)
+        // モックデータ (10個：上限なしと調整可能を共存させない)
         // -----------------------------------------------------------------------------
         const CURRENT_MOCK_DATE = new Date('2025-12-17T12:00:00');
 
         const JOB_LISTINGS = [
             {
-                id: 1,
-                type: "single", 
-                date: "12/20(金) 13:00〜16:00",
+                id: 1, type: "single", date: "12/29(月) 13:00〜16:00",
                 location: "東京都 世田谷区 (代々木上原駅 徒歩5分)",
-                minRate: 2000,
-                maxRate: 2500,
-                parentHistory: 120, 
-                tags: ["自宅保育"], 
-                childAge: "2歳",
-                description: "主人が帰宅するまでのシッティング希望。お兄ちゃんの小学校での用事の間、3歳の次男のシッティングをお願いできる方を探しております。お昼寝の時間と重なるかもしれません。",
-                applyCount: 3,
-                favoriteCount: 12,
-                deadline: "12/19(木) 12:00",
-                deadlineDate: new Date('2025-12-19T12:00:00'),
+                minRate: 2000, maxRate: 2500, isFlexible: true, isNoMaxLimit: false, 
+                parentHistory: 120, tags: ["自宅保育"], childAge: "2歳",
+                description: "年末の買い出しの間、数時間だけ見守りをお願いします。",
+                applyCount: 1, favoriteCount: 12, keepRecruiting: true, isMultiple: false,
+                deadline: "12/28(日) 12:00", deadlineDate: new Date('2025-12-28T12:00:00'),
+                postedAt: new Date('2025-12-17T11:58:00'),
             },
             {
-                id: 2,
-                type: "regular",
-                date: "毎週火曜 16:00〜19:00",
-                duration: "2025/1/7〜2025/3/31",
+                id: 2, type: "regular", date: "毎週月曜 16:00〜19:00", duration: "約3ヶ月",
                 location: "東京都 渋谷区 (恵比寿駅 徒歩8分)",
-                minRate: 2300,
-                maxRate: 2800,
-                parentHistory: 0, 
-                tags: ["送迎", "自宅保育"],
-                childAge: "4歳, 0歳",
-                description: "保育園へのお迎えと、帰宅後の入浴補助をお願いしたいです。私が在宅していますが、下の子（0歳）の世話で手が離せないため、上の子（4歳）と遊んでいただける方を募集します。",
-                applyCount: 0,
-                favoriteCount: 5,
-                deadline: "12/31(火) 18:00", 
-                deadlineDate: new Date('2025-12-31T18:00:00'),
+                minRate: null, maxRate: null, isFlexible: false, isNoMaxLimit: true, // 上限なし
+                parentHistory: 15, tags: ["送迎", "自宅保育"], childAge: "4歳, 0歳",
+                description: "年明けからの定期依頼です。保育園へのお迎えと、帰宅後の入浴補助をお願いしたいです。",
+                applyCount: 5, favoriteCount: 22, keepRecruiting: true, isMultiple: true, 
+                deadline: "12/31(火) 18:00", deadlineDate: new Date('2025-12-31T18:00:00'),
+                postedAt: new Date('2025-12-17T11:55:00'),
             },
             {
-                id: 3,
-                type: "single",
-                date: "12/22(日) 10:00〜12:00",
-                location: "東京都 港区 (広尾駅 徒歩3分)",
-                minRate: 3000,
-                maxRate: 3500,
-                parentHistory: 15,
-                tags: ["自宅外保育"],
-                childAge: "6歳",
-                description: "英語でのコミュニケーションが可能な方を探しています。近くの有栖川公園で遊んでいただきつつ、簡単な英会話の相手をしていただけると嬉しいです。",
-                applyCount: 8,
-                favoriteCount: 24,
-                deadline: "12/21(土) 09:00",
-                deadlineDate: new Date('2025-12-21T09:00:00'),
+                id: 3, type: "single", date: "12/30(火) 09:00〜12:00",
+                location: "東京都 港区 (六本木駅 徒歩5分)",
+                minRate: null, maxRate: 3000, isFlexible: true, isNoMaxLimit: false, // 下限なし + 調整可能
+                parentHistory: 15, tags: ["自宅保育"], childAge: "3歳",
+                description: "急な用件が入ったため、午前中のみシッティングをお願いします。",
+                applyCount: 0, favoriteCount: 4, keepRecruiting: false, isMultiple: false,
+                deadline: "12/29(月) 18:00", deadlineDate: new Date('2025-12-29T18:00:00'),
+                postedAt: new Date('2025-12-17T11:50:00'),
             },
             {
-                id: 4,
-                type: "single",
-                date: "12/25(水) 18:00〜22:00",
-                location: "東京都 目黒区 (中目黒駅 徒歩10分)",
-                minRate: 2500,
-                maxRate: 3000,
-                parentHistory: 50,
-                tags: ["自宅保育"],
-                childAge: "1歳",
-                description: "夫婦で外出の予定があるため、夜間の見守りをお願いします。夕食は済ませておきますので、寝かしつけのみお願いできればと思います。",
-                applyCount: 1,
-                favoriteCount: 8,
-                deadline: "12/24(火) 15:00",
-                deadlineDate: new Date('2025-12-24T15:00:00'),
+                id: 4, type: "regular", date: "毎週火・木曜 17:00〜20:00", duration: "約半年",
+                location: "東京都 目黒区 (自由が丘駅 徒歩10分)",
+                minRate: 2100, maxRate: 2600, isFlexible: false, isNoMaxLimit: false,
+                parentHistory: 45, tags: ["送迎"], childAge: "小学生",
+                description: "塾への送迎をお願いしたいです。夕食のサポートもいただけると助かります。",
+                applyCount: 6, favoriteCount: 18, keepRecruiting: true, isMultiple: true, 
+                deadline: "12/30(火) 12:00", deadlineDate: new Date('2025-12-30T12:00:00'),
+                postedAt: new Date('2025-12-17T11:45:00'),
             },
             {
-                id: 5,
-                type: "regular",
-                date: "毎週月・水 09:00〜14:00",
-                duration: "2025/2/1〜2025/7/31",
-                location: "東京都 品川区 (大崎駅 徒歩2分)",
-                minRate: 2000,
-                maxRate: 2200,
-                parentHistory: 3,
-                tags: ["自宅保育"],
-                childAge: "3歳",
-                description: "在宅ワーク中の遊び相手をお願いします。会議中はお部屋で静かに遊べる方、工作やお絵描きが得意な方だと助かります。",
-                applyCount: 2,
-                favoriteCount: 15,
-                deadline: "1/20(月) 12:00",
-                deadlineDate: new Date('2026-01-20T12:00:00'),
+                id: 5, type: "single", date: "12/31(水) 10:00〜18:00",
+                location: "神奈川県 横浜市 (横浜駅 徒歩5分)",
+                minRate: 2200, maxRate: 2800, isFlexible: true, isNoMaxLimit: false, // 調整可能
+                parentHistory: 8, tags: ["自宅外保育"], childAge: "5歳",
+                description: "大掃除の間、近くの室内遊び場で一緒に遊んでいただける方を探しています。",
+                applyCount: 2, favoriteCount: 9, keepRecruiting: true, isMultiple: false,
+                deadline: "12/30(火) 15:00", deadlineDate: new Date('2025-12-30T15:00:00'),
+                postedAt: new Date('2025-12-16T10:00:00'),
             },
             {
-                id: 6,
-                type: "single",
-                date: "12/28(土) 10:00〜15:00",
-                location: "東京都 新宿区 (神楽坂駅 徒歩4分)",
-                minRate: 2200,
-                maxRate: 2400,
-                parentHistory: 8,
-                tags: ["自宅保育"],
-                childAge: "5歳",
-                description: "大掃除の間、子供を見ていてほしいです。近所の公園に連れ出していただけると非常に助かります。お昼代はこちらで負担します。",
-                applyCount: 5,
-                favoriteCount: 10,
-                deadline: "12/27(金) 10:00",
-                deadlineDate: new Date('2025-12-27T10:00:00'),
+                id: 6, type: "regular", date: "毎週金曜 09:00〜14:00", duration: "約1ヶ月",
+                location: "東京都 中央区 (銀座駅 徒歩3分)",
+                minRate: 2500, maxRate: 3000, isFlexible: false, isNoMaxLimit: false,
+                parentHistory: 0, tags: ["自宅保育"], childAge: "1歳",
+                description: "仕事復帰に伴う慣らし期間のシッティングをお願いしたいです。",
+                applyCount: 0, favoriteCount: 15, keepRecruiting: false, isMultiple: false,
+                deadline: "1/5(月) 20:00", deadlineDate: new Date('2026-01-05T20:00:00'),
+                postedAt: new Date('2025-12-15T14:00:00'),
             },
             {
-                id: 7,
-                type: "single",
-                date: "1/2(木) 11:00〜14:00",
-                location: "東京都 中央区 (勝どき駅 徒歩1分)",
-                minRate: 3500,
-                maxRate: 4000,
-                parentHistory: 200,
-                tags: ["自宅保育"],
-                childAge: "2歳, 4歳",
-                description: "お正月の来客対応中、子供たちと別室で遊んでいただける方を探しています。お年玉として時給は高めに設定させていただきました。",
-                applyCount: 12,
-                favoriteCount: 45,
-                deadline: "12/30(月) 18:00",
-                deadlineDate: new Date('2025-12-30T18:00:00'),
+                id: 7, type: "single", date: "1/1(木) 18:00〜21:00",
+                location: "東京都 新宿区 (新宿駅 徒歩12分)",
+                minRate: 2800, maxRate: 3500, isFlexible: false, isNoMaxLimit: false,
+                parentHistory: 60, tags: ["自宅保育"], childAge: "2歳, 4歳",
+                description: "元旦の寝かしつけメインの依頼です。夕食は済ませておきます。",
+                applyCount: 3, favoriteCount: 30, keepRecruiting: true, isMultiple: false,
+                deadline: "12/31(水) 12:00", deadlineDate: new Date('2025-12-31T12:00:00'),
+                postedAt: new Date('2025-12-15T09:00:00'),
             },
             {
-                id: 8,
-                type: "regular",
-                date: "毎週金曜 17:00〜20:00",
-                duration: "2025/1/10〜2025/6/30",
-                location: "神奈川県 横浜市 (横浜駅 徒歩10分)",
-                minRate: 1800,
-                maxRate: 2100,
-                parentHistory: 2,
-                tags: ["送迎"],
-                childAge: "小学生",
-                description: "習い事（スイミング）への送迎と、帰宅後の夕食の温め直しをお願いします。徒歩10分程度の距離です。",
-                applyCount: 1,
-                favoriteCount: 3,
-                deadline: "1/5(日) 20:00",
-                deadlineDate: new Date('2026-01-05T20:00:00'),
+                id: 8, type: "regular", date: "毎週水曜 15:00〜18:00", duration: "約1年",
+                location: "東京都 文京区 (本郷三丁目駅 徒歩4分)",
+                minRate: 1800, maxRate: 2200, isFlexible: false, isNoMaxLimit: false,
+                parentHistory: 20, tags: ["送迎", "自宅保育"], childAge: "3歳",
+                description: "幼稚園のお迎えと、その後の室内遊びをお願いします。",
+                applyCount: 4, favoriteCount: 11, keepRecruiting: true, isMultiple: false,
+                deadline: "1/5(日) 18:00", deadlineDate: new Date('2026-01-05T18:00:00'),
+                postedAt: new Date('2025-12-14T11:00:00'),
             },
             {
-                id: 9,
-                type: "single",
-                date: "12/23(月) 09:00〜17:00",
-                location: "東京都 武蔵野市 (吉祥寺駅 徒歩15分)",
-                minRate: 2100,
-                maxRate: 2600,
-                parentHistory: 10,
-                tags: ["自宅保育"],
-                childAge: "0歳",
-                description: "生後6ヶ月の赤ちゃんです。離乳食が始まっています。私（母親）も在宅ですが、別室で仕事をします。",
-                applyCount: 4,
-                favoriteCount: 9,
-                deadline: "12/17(火) 15:00", // 今日締切（残り時間わずか）
-                deadlineDate: new Date('2025-12-17T15:00:00'),
-            },
-            {
-                id: 10,
-                type: "single",
-                date: "12/31(火) 18:00〜23:00",
+                id: 9, type: "single", date: "1/2(金) 11:00〜16:00",
                 location: "東京都 江東区 (豊洲駅 徒歩3分)",
-                minRate: 4000,
-                maxRate: 5000,
-                parentHistory: 30,
-                tags: ["自宅保育"],
-                childAge: "1歳",
-                description: "大晦日に夫婦で少しだけ外出したいです。紅白歌合戦を見ながら、のんびり過ごしていただければと思います。",
-                applyCount: 6,
-                favoriteCount: 20,
-                deadline: "12/18(水) 10:00", // 明日締切
-                deadlineDate: new Date('2025-12-18T10:00:00'),
+                minRate: null, maxRate: null, isFlexible: false, isNoMaxLimit: true, // 上限なし 
+                parentHistory: 150, tags: ["自宅保育"], childAge: "2歳",
+                description: "お正月期間の特別依頼です。時給設定をなしにしています。",
+                applyCount: 10, favoriteCount: 55, keepRecruiting: true, isMultiple: true, 
+                deadline: "12/31(水) 18:00", deadlineDate: new Date('2025-12-31T18:00:00'),
+                postedAt: new Date('2025-12-13T20:00:00'),
+            },
+            {
+                id: 10, type: "regular", date: "毎週月・水・金曜 16:00〜19:00", duration: "約3ヶ月",
+                location: "東京都 千代田区 (麹町駅 徒歩2分)",
+                minRate: 2200, maxRate: 2600, isFlexible: true, isNoMaxLimit: false, // 調整可能
+                parentHistory: 3, tags: ["送迎", "自宅保育"], childAge: "4歳",
+                description: "年明けからの週3回定期依頼です。複数のシッターさんで交代をお願いできればと思います。",
+                applyCount: 0, favoriteCount: 7, keepRecruiting: false, isMultiple: true, 
+                deadline: "1/5(月) 12:00", deadlineDate: new Date('2026-01-05T12:00:00'),
+                postedAt: new Date('2025-12-12T16:00:00'),
             }
         ];
 
@@ -356,36 +314,59 @@
         // コンポーネント：保護者ビュー
         // -----------------------------------------------------------------------------
         const ParentCreateView = () => {
-            const [minRate, setMinRate] = useState(1800);
-            const [maxRate, setMaxRate] = useState(2000);
+            const [minRate, setMinRate] = useState("");
+            const [maxRate, setMaxRate] = useState(2400); 
+            const [isFlexible, setIsFlexible] = useState(false); 
+            const [isNoMaxLimit, setIsNoMaxLimit] = useState(false);
             const [matchCount, setMatchCount] = useState(0);
             const [applyProb, setApplyProb] = useState(0);
-            const [marketStatus, setMarketStatus] = useState("low");
+            const [marketStatus, setMarketStatus] = useState("mid");
+
+            // 上限なし かつ 調整可能 を共存させない
+            useEffect(() => {
+                if (isNoMaxLimit) {
+                    setMinRate("");
+                    setIsFlexible(false);
+                }
+            }, [isNoMaxLimit]);
 
             useEffect(() => {
-                let count = 3;
-                let prob = 20;
-                const rateDiff = maxRate - 1800;
-                if (rateDiff > 0) {
-                    count += Math.floor(rateDiff / 50);
-                    prob += Math.floor(rateDiff / 20);
+                let count = 5;
+                let prob = 40;
+                
+                if (isNoMaxLimit) {
+                    count = 25;
+                    prob = 90; 
+                    setMarketStatus("high");
+                } else {
+                    const rate = Number(maxRate);
+                    if (rate >= 2400) {
+                        count += Math.floor((rate - 2400) / 50);
+                        prob += Math.floor((rate - 2400) / 20);
+                    } else {
+                        count -= Math.floor((2400 - rate) / 100);
+                        prob -= Math.floor((2400 - rate) / 40);
+                    }
+                    if (isFlexible) {
+                        count += 2;
+                        prob += 10;
+                    }
+                    if (prob > 95) prob = 95;
+                    if (prob < 5) prob = 5;
+                    if (count < 1) count = 1;
+
+                    if (rate < 2000) setMarketStatus("low");
+                    else if (rate < 2800) setMarketStatus("mid");
+                    else setMarketStatus("high");
                 }
-                const range = maxRate - minRate;
-                if (range >= 500) {
-                    count += 5;
-                    prob += 15;
-                }
-                if (prob > 99) prob = 99;
+
                 setMatchCount(count);
                 setApplyProb(prob);
-                if (maxRate < 2000) setMarketStatus("low");
-                else if (maxRate < 2500) setMarketStatus("mid");
-                else setMarketStatus("high");
-            }, [minRate, maxRate]);
+            }, [minRate, maxRate, isFlexible, isNoMaxLimit]);
 
             return (
                 <div className="bg-white min-h-screen pb-20" style={FONT_STYLE}>
-                    <div className="p-4 shadow-sm sticky top-0 z-10 flex items-center bg-white">
+                    <div className="p-4 shadow-sm sticky top-0 z-10 flex items-center bg-white border-b border-gray-100">
                         <button className="mr-4">
                             <ChevronRight className="rotate-180" size={24} color="#666" />
                         </button>
@@ -394,68 +375,123 @@
                     </div>
                     <div className="p-4 space-y-6">
                         <div className="p-6 rounded-xl border border-gray-100 shadow-sm space-y-6 bg-white">
-                            <h2 className="font-bold text-lg">ご希望の時給範囲</h2>
-                            <div>
-                                <label className="text-xs opacity-70 font-bold block mb-2">希望金額（下限）</label>
-                                <div className="flex items-center gap-2">
-                                    <input type="number" value={minRate} onChange={(e) => setMinRate(Number(e.target.value))}
-                                        className="flex-1 p-3 border rounded-lg text-lg font-bold text-right outline-none focus:ring-2"
-                                        style={{ borderColor: '#E5E5E5', color: COLORS.text }} />
-                                    <span className="font-bold">円 〜</span>
+                            <h2 className="font-bold text-lg text-center text-[#222]">希望する時給</h2>
+                            
+                            <div className="flex gap-4">
+                                {/* 希望時給（下限） */}
+                                <div className="flex-1">
+                                    <label className="text-[10px] opacity-70 font-bold block mb-1.5 h-4">
+                                        希望時給（下限） <span className="font-normal bg-gray-100 px-1 py-0.5 rounded text-[8px] text-gray-500">任意</span>
+                                    </label>
+                                    <div className="flex items-center gap-1">
+                                        <input type="number" placeholder="1600" value={minRate} onChange={(e) => setMinRate(e.target.value)}
+                                            className={`w-full p-2.5 border rounded-lg text-base font-bold text-right outline-none transition-colors ${isNoMaxLimit ? 'bg-gray-50 border-gray-200 text-gray-400' : 'focus:ring-2 focus:ring-[#CDA250]/30 border-[#E5E7EB]'}`}
+                                            disabled={isNoMaxLimit} />
+                                        <span className={`text-xs font-bold ${isNoMaxLimit ? 'opacity-30' : ''}`}>円</span>
+                                    </div>
+                                </div>
+
+                                {/* 希望時給（上限） */}
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-center mb-1.5 h-4">
+                                        <label className="text-[10px] opacity-70 font-bold">希望時給（上限）</label>
+                                        <div className="flex items-center gap-1">
+                                            <input 
+                                                type="checkbox" 
+                                                id="noMaxLimit" 
+                                                checked={isNoMaxLimit}
+                                                onChange={(e) => setIsNoMaxLimit(e.target.checked)}
+                                                className="custom-checkbox"
+                                            />
+                                            <label htmlFor="noMaxLimit" className="text-[8px] font-bold opacity-80 cursor-pointer">上限なし</label>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <div className={`w-full p-2.5 border rounded-lg text-base font-bold text-right transition-colors ${isNoMaxLimit ? 'bg-gray-50 border-gray-200 text-gray-400' : 'bg-[#F5EFDE] border-[#CDA250] text-[#4B2F16]'}`}>
+                                            {isNoMaxLimit ? "なし" : (
+                                                <input type="number" value={maxRate} onChange={(e) => setMaxRate(Number(e.target.value))}
+                                                    className="w-full bg-transparent text-right outline-none"
+                                                    disabled={isNoMaxLimit} />
+                                            )}
+                                        </div>
+                                        <span className={`text-xs font-bold ${isNoMaxLimit ? 'opacity-30' : ''}`}>円</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <div className="flex justify-between items-end mb-2">
-                                    <label className="text-xs opacity-70 font-bold">お支払い上限（ここまでなら出せる）</label>
+
+                            <div className="flex items-center gap-2.5 py-1 mb-2 px-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="flexible" 
+                                    checked={isFlexible}
+                                    onChange={(e) => setIsFlexible(e.target.checked)}
+                                    className="custom-checkbox"
+                                    disabled={isNoMaxLimit}
+                                />
+                                {/* 修正: シンプルかつ意図が伝わる表現 */}
+                                <label htmlFor="flexible" className={`text-xs font-bold opacity-80 cursor-pointer select-none leading-relaxed ${isNoMaxLimit ? 'opacity-30' : ''}`}>
+                                    金額は調整可能です
+                                </label>
+                            </div>
+
+                            <div className="pt-2 border-t border-gray-50">
+                                <div className="flex flex-col gap-1 mb-4 text-[11px] bg-gray-50 p-2.5 rounded border border-gray-100">
+                                    <span className="font-bold opacity-80 flex items-center gap-1"><MapPin size={12}/> 参考情報</span>
+                                    <span className="opacity-70 font-medium">お住まいのエリア（世田谷区）の平均時給：2,400円</span>
                                 </div>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <input type="number" value={maxRate} onChange={(e) => setMaxRate(Number(e.target.value))}
-                                        className="flex-1 p-3 border-2 rounded-lg text-2xl font-bold text-right"
-                                        style={{ borderColor: COLORS.main, backgroundColor: COLORS.sub, color: COLORS.text }} />
-                                    <span className="font-bold text-lg">円</span>
-                                </div>
-                                <div className="flex flex-col gap-1 mb-4 text-xs bg-gray-50 p-2 rounded">
-                                    <span className="font-bold opacity-80">💡 参考情報</span>
-                                    <span className="opacity-70">お住まいのエリア（世田谷区）の平均時給：2,300円</span>
-                                </div>
-                                <input type="range" min="1800" max="4000" step="50" value={maxRate} onChange={(e) => setMaxRate(Number(e.target.value))}
-                                    className="w-full h-3 rounded-lg appearance-none cursor-pointer"
-                                    style={{ accentColor: COLORS.main, backgroundColor: '#D1D5DB' }} />
-                                <p className="text-xs opacity-50 mt-2 text-center">スライダーを動かして調整</p>
+                                
+                                {!isNoMaxLimit && (
+                                    <>
+                                        <input type="range" min="1500" max="4500" step="50" value={maxRate} onChange={(e) => setMaxRate(Number(e.target.value))}
+                                            className="w-full h-3 rounded-lg appearance-none cursor-pointer"
+                                            style={{ accentColor: COLORS.main, backgroundColor: '#D1D5DB' }} />
+                                        <p className="text-[10px] opacity-40 mt-2 text-center">スライダーを左右に動かして調整できます</p>
+                                    </>
+                                )}
                             </div>
                         </div>
+
                         <div className="p-5 rounded-xl border transition-all duration-300 bg-white shadow-sm" style={{ borderColor: COLORS.main }}>
-                            <h3 className="text-center font-bold mb-4 opacity-80">この条件での見込み</h3>
+                            <h3 className="text-center font-bold mb-4 opacity-80 text-xs">現在の条件での募集見込み</h3>
                             <div className="flex justify-between items-center mb-4">
                                 <div className="text-center w-1/2 border-r border-gray-200">
-                                    <p className="text-xs opacity-60 mb-1">近くの対象シッター</p>
+                                    <p className="text-[10px] opacity-60 mb-1">近くの対象シッター</p>
                                     <p className="text-3xl font-bold">{matchCount}<span className="text-sm font-normal ml-1">人</span></p>
                                 </div>
                                 <div className="text-center w-1/2">
-                                    <p className="text-xs opacity-60 mb-1">応募が来る確率</p>
-                                    <div className="text-3xl font-bold" style={{ color: applyProb > 80 ? '#D65A31' : COLORS.text }}>
+                                    <p className="text-[10px] opacity-60 mb-1">応募が来る確率</p>
+                                    <div className="text-3xl font-bold" style={{ color: applyProb > 70 ? '#D65A31' : COLORS.text }}>
                                         {applyProb}<span className="text-sm font-normal ml-1">%</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="text-sm p-3 rounded-lg flex gap-2" style={{ backgroundColor: COLORS.sub }}>
-                                {marketStatus === 'low' && (
+                                {isNoMaxLimit ? (
                                     <div className="flex gap-2">
-                                        <AlertCircle className="shrink-0" size={20} color="#D65A31" />
-                                        <p>上限をあと<span className="font-bold" style={{ color: '#D65A31' }}>300円</span>上げると、経験豊富なシッターも含めて対象が広がります。</p>
+                                        <CheckCircle className="shrink-0" size={18} color="green" />
+                                        <p className="text-[11px] leading-relaxed font-medium">最高の条件設定です！マッチングの可能性が非常に高く、多くのシッターが検討しやすくなります。</p>
                                     </div>
-                                )}
-                                {marketStatus === 'mid' && (
-                                    <div className="flex gap-2">
-                                        <Info className="shrink-0" size={20} color={COLORS.main} />
-                                        <p>標準的な設定です。急ぎの場合はもう少し上限を上げるとより確実です。</p>
-                                    </div>
-                                )}
-                                {marketStatus === 'high' && (
-                                    <div className="flex gap-2">
-                                        <CheckCircle className="shrink-0" size={20} color="green" />
-                                        <p>十分な金額設定です！多くのシッターからの応募が見込めます。</p>
-                                    </div>
+                                ) : (
+                                    <>
+                                        {marketStatus === 'low' && (
+                                            <div className="flex gap-2">
+                                                <AlertCircle className="shrink-0" size={18} color="#D65A31" />
+                                                <p className="text-[11px] leading-relaxed">上限をもう少し上げると、経験豊富なシッターも含めて対象が広がります。</p>
+                                            </div>
+                                        )}
+                                        {marketStatus === 'mid' && (
+                                            <div className="flex gap-2">
+                                                <Info className="shrink-0" size={18} color={COLORS.main} />
+                                                <p className="text-[11px] leading-relaxed">このエリアの平均的な金額です。バランスの良い設定になっています。</p>
+                                            </div>
+                                        )}
+                                        {marketStatus === 'high' && (
+                                            <div className="flex gap-2">
+                                                <CheckCircle className="shrink-0" size={18} color="green" />
+                                                <p className="text-[11px] leading-relaxed">十分な金額設定です！多くのシッターからの応募が見込めます。</p>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -469,142 +505,147 @@
         // -----------------------------------------------------------------------------
         const SitterListView = () => {
             const [likedJobs, setLikedJobs] = useState([]);
+            const toggleLike = (id) => setLikedJobs(p => p.includes(id) ? p.filter(i => i !== id) : [...p, id]);
 
-            const toggleLike = (id) => {
-                if (likedJobs.includes(id)) {
-                    setLikedJobs(likedJobs.filter(jobId => jobId !== id));
-                } else {
-                    setLikedJobs([...likedJobs, id]);
-                }
-            };
-
-            const getHistoryTag = (count) => {
-                if (count === 0) return { label: "🔰 初めての利用", show: true };
-                return { label: "", show: false };
+            const getPostedTimeLabel = (postedAt) => {
+                const diffMs = CURRENT_MOCK_DATE.getTime() - postedAt.getTime();
+                const diffMin = Math.floor(diffMs / (1000 * 60));
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                if (diffMin < 60) return `${diffMin}分前`;
+                if (diffHours < 24) return `${diffHours}時間前`;
+                return `${postedAt.getMonth() + 1}/${postedAt.getDate()}`;
             };
 
             const getRemainingTime = (deadline) => {
                 const diff = deadline.getTime() - CURRENT_MOCK_DATE.getTime();
                 if (diff <= 0) return { text: "期限切れ", isUrgent: false };
-                
                 const hours = Math.floor(diff / (1000 * 60 * 60));
                 const days = Math.floor(hours / 24);
+                return days > 0 ? { text: `残り${days}日`, isUrgent: days <= 1 } : { text: `残り${hours}時間`, isUrgent: true };
+            };
 
-                if (days > 0) {
-                    return { text: `残り${days}日`, isUrgent: days <= 1 };
+            const sortedJobs = [...JOB_LISTINGS].sort((a, b) => b.postedAt - a.postedAt);
+
+            // 時給表示ロジック
+            const renderRateContent = (job) => {
+                let rateText = "";
+                if (job.isNoMaxLimit) {
+                    rateText = "上限なし";
+                } else if (!job.minRate) {
+                    rateText = `〜${job.maxRate.toLocaleString()}円`;
                 } else {
-                    return { text: `残り${hours}時間`, isUrgent: true };
+                    rateText = `${job.minRate.toLocaleString()}〜${job.maxRate.toLocaleString()}円`;
                 }
+
+                return (
+                    <div className="flex items-center flex-wrap gap-2">
+                        <div className="text-sm opacity-90 font-medium">時給 {rateText}</div>
+                        {/* 修正: グレーベースで主張を抑えたタグ */}
+                        {job.isFlexible && (
+                            <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium whitespace-nowrap">
+                                調整可能です
+                            </span>
+                        )}
+                    </div>
+                );
             };
 
             return (
                 <div className="min-h-screen pb-20" style={{ ...FONT_STYLE, backgroundColor: '#FAFAFA' }}>
-                    <div className="bg-white p-4 shadow-sm sticky top-0 z-10 flex justify-center items-center">
-                        <h1 className="text-lg font-bold">募集一覧</h1>
-                        <button className="absolute right-4 p-2">
-                            <Filter size={20} color={COLORS.text}/>
-                        </button>
-                    </div>
-                    <div className="flex gap-2 p-4 overflow-x-auto whitespace-nowrap bg-white border-b border-gray-100">
-                        <span className="px-4 py-1.5 text-white rounded-full text-sm font-bold" style={{ backgroundColor: COLORS.text }}>すべて</span>
-                        <span className="px-4 py-1.5 bg-gray-100 rounded-full text-sm">高時給</span>
-                        <span className="px-4 py-1.5 bg-gray-100 rounded-full text-sm">定期</span>
-                        <span className="px-4 py-1.5 bg-gray-100 rounded-full text-sm">近所</span>
+                    <div className="bg-white p-4 shadow-sm sticky top-0 z-10 flex justify-center items-center border-b border-gray-100">
+                        <h1 className="text-lg font-bold text-center flex-1">募集一覧</h1>
+                        <button className="absolute right-4 p-2 text-gray-400"><Filter size={20}/></button>
                     </div>
 
                     <div className="p-4 space-y-4">
-                        {JOB_LISTINGS.map((job) => {
+                        {sortedJobs.map((job) => {
                             const isRegular = job.type === 'regular';
                             const mainColor = isRegular ? COLORS.regularMain : COLORS.singleMain;
                             const bgColor = isRegular ? COLORS.regularBg : COLORS.singleBg;
-                            const historyTag = getHistoryTag(job.parentHistory);
                             const remaining = getRemainingTime(job.deadlineDate);
-                            
+                            const applyCount = job.applyCount;
+                            const showKeepTag = applyCount > 0 && applyCount < 5 && job.keepRecruiting;
+                            const showMultipleTag = job.isMultiple;
+
                             return (
-                                <div key={job.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 relative">
-                                    
-                                    {/* Type Badge Header */}
-                                    <div className="px-4 py-2 flex items-center justify-between" style={{ backgroundColor: bgColor, color: COLORS.text }}>
-                                        <div className="flex items-center gap-1.5 font-bold text-sm">
-                                            {isRegular ? (<><Calendar size={16} color={mainColor} fill={mainColor} className="opacity-80"/> 定期</>) : (<><Clock size={16} color={mainColor} fill={mainColor} className="opacity-80"/> 単発</>)}
+                                <div key={job.id} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 relative">
+                                    <div className="px-4 py-2 flex items-center justify-between text-xs font-bold" style={{ backgroundColor: bgColor, color: COLORS.text }}>
+                                        <div className="flex items-center gap-1.5">
+                                            {isRegular ? <Calendar size={14} color={mainColor} fill={mainColor} /> : <Clock size={14} color={mainColor} fill={mainColor} />}
+                                            {isRegular ? "定期" : "単発"}
                                         </div>
-                                        {isRegular && job.duration && (
-                                            <span className="text-xs font-medium opacity-90">{job.duration}</span>
-                                        )}
+                                        <div className="opacity-60 font-medium">{getPostedTimeLabel(job.postedAt)}</div>
                                     </div>
 
-                                    {/* === SECTION 1: シッティング情報 === */}
-                                    <div className="p-5 pb-4">
-                                        
-                                        <div className="flex items-center text-lg font-bold leading-tight mb-3">
-                                            {job.date}
-                                        </div>
-
-                                        <div className="flex flex-col gap-2 mb-4">
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-5 flex justify-center mt-0.5"><MapPin size={18} className="text-gray-400 opacity-80" /></div>
-                                                <span className="text-base font-medium opacity-90 leading-snug">{job.location}</span>
+                                    <div className="p-5 pb-2">
+                                        <div className="text-lg font-extrabold mb-3 leading-tight">{job.date}</div>
+                                        {isRegular && job.duration && (
+                                            <div className="text-xs opacity-70 mb-3 flex items-center gap-1 font-medium">
+                                                <Calendar size={12} /> 期間: {job.duration}
                                             </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-5 flex justify-center"><CircleDollarSign size={18} className="text-gray-400 opacity-80" /></div>
-                                                <div className="text-base font-medium opacity-90">
-                                                    時給 {job.minRate.toLocaleString()}〜{job.maxRate.toLocaleString()}円
-                                                </div>
+                                        )}
+                                        <div className="space-y-1.5 mb-4">
+                                            <div className="flex items-start gap-2.5">
+                                                <MapPin size={16} className="text-gray-400 mt-1 shrink-0" />
+                                                <span className="text-sm opacity-90 font-medium">{job.location}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2.5">
+                                                <CircleDollarSign size={16} className="text-gray-400 shrink-0" />
+                                                {renderRateContent(job)}
                                             </div>
                                         </div>
-
                                         <div className="mb-4">
-                                            <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                                                {job.description}
-                                            </p>
+                                            <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{job.description}</p>
                                         </div>
-
-                                        <div className="flex flex-wrap gap-2">
-                                            {historyTag.show && (
-                                                <span className="text-xs opacity-70 bg-gray-50 px-2 py-0.5 rounded border border-gray-100 font-bold flex items-center gap-1">
-                                                    <User size={12} fill="#9CA3AF" className="text-gray-400"/>
-                                                    {historyTag.label}
+                                        
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {showMultipleTag && (
+                                                <span className="text-[10px] bg-gray-50 text-gray-500 px-2 py-0.5 rounded border border-gray-100 flex items-center gap-1 font-medium">
+                                                    <Users size={10} className="text-gray-400"/>複数名募集
                                                 </span>
                                             )}
-
-                                            {job.tags.map(tag => (<span key={tag} className="text-xs opacity-70 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">#{tag}</span>))}
-                                            
-                                            <span className="text-xs opacity-70 bg-gray-50 px-2 py-0.5 rounded border border-gray-100 flex items-center"><Baby size={12} className="mr-1"/> {job.childAge}</span>
+                                            {job.parentHistory === 0 && (
+                                                <span className="text-[10px] opacity-70 bg-gray-50 px-2 py-0.5 rounded border border-gray-100 font-bold flex items-center gap-1">
+                                                    <User size={10} fill="#9CA3AF" className="text-gray-400"/>🔰 初めての利用
+                                                </span>
+                                            )}
+                                            {job.tags.map(tag => (<span key={tag} className="text-[10px] bg-gray-50 text-gray-500 px-2 py-0.5 rounded border border-gray-100 font-medium">#{tag}</span>))}
+                                            <span className="text-[10px] bg-gray-50 text-gray-500 px-2 py-0.5 rounded border border-gray-100 flex items-center font-medium"><Baby size={10} className="mr-1"/> {job.childAge}</span>
                                         </div>
                                     </div>
 
-                                    <div className="w-full h-px bg-gray-100"></div>
-
-                                    {/* === SECTION 3: 募集情報・アクション (Footer) === */}
-                                    <div className="bg-white px-5 py-3 flex justify-between items-center border-t border-gray-100">
-                                        
-                                        <div className="flex flex-col gap-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center gap-1 text-[10px] opacity-60 font-bold">
-                                                    <Timer size={12} /> 期限 {job.deadline}
-                                                </div>
-                                                <span className={`text-[10px] font-bold ${remaining.isUrgent ? 'text-red-500' : 'text-gray-400'}`}>
-                                                    ({remaining.text})
-                                                </span>
+                                    <div className="px-5 py-4 flex justify-between items-end border-t border-gray-50 bg-gray-50/30">
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold">
+                                                <Timer size={12} /> 
+                                                <span>期限 {job.deadline}</span>
+                                                <span className={remaining.isUrgent ? 'text-red-500' : ''}>({remaining.text})</span>
                                             </div>
-
-                                            <div className="flex items-center gap-1 text-xs font-bold" style={{ color: '#D65A31' }}>
-                                                <Users size={14} />
-                                                <span>{job.applyCount}人が応募</span>
+                                            <div className="flex flex-col gap-1.5">
+                                                <div className={`flex items-center gap-1.5 text-xs font-bold ${applyCount === 0 ? 'text-orange-600' : 'text-gray-500'}`}>
+                                                    <Users size={14} />
+                                                    <span>{applyCount}人が応募</span>
+                                                </div>
+                                                
+                                                {showKeepTag && (
+                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-md self-start" style={{ backgroundColor: COLORS.positiveBg }}>
+                                                        <RecruitMore size={12} color={COLORS.positive} />
+                                                        <span className="text-[11px] font-extrabold" style={{ color: COLORS.positive }}>引き続き募集中！</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-2">
-                                            <button onClick={() => toggleLike(job.id)} className={`h-10 px-3 flex justify-center items-center rounded-full border transition-all gap-1.5 ${likedJobs.includes(job.id) ? 'bg-pink-50 border-pink-200' : 'bg-white border-gray-200'}`}>
-                                                <Heart size={18} fill={likedJobs.includes(job.id) ? "#EC4899" : "none"} color={likedJobs.includes(job.id) ? "#EC4899" : "#9CA3AF"} />
-                                                <span className="text-xs font-bold text-gray-400">{job.favoriteCount + (likedJobs.includes(job.id) ? 1 : 0)}</span>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => toggleLike(job.id)} className={`h-10 px-3 flex justify-center items-center rounded-xl border transition-all gap-1.5 ${likedJobs.includes(job.id) ? 'bg-pink-50 border-pink-100' : 'bg-white border-gray-200'}`}>
+                                                <Heart size={18} fill={likedJobs.includes(job.id) ? "#EC4899" : "none"} color={likedJobs.includes(job.id) ? "#EC4899" : "#D1D5DB"} />
+                                                <span className="text-[11px] font-bold text-gray-400">{job.favoriteCount + (likedJobs.includes(job.id) ? 1 : 0)}</span>
                                             </button>
-                                            <button className="px-5 h-10 rounded-full font-bold text-white shadow-sm flex items-center justify-center text-sm" style={{ backgroundColor: COLORS.main }}>
+                                            <button className="px-5 h-10 rounded-xl font-bold text-white shadow-md flex items-center justify-center text-sm" style={{ backgroundColor: COLORS.main }}>
                                                 詳細 <ChevronRight size={16} className="ml-0.5"/>
                                             </button>
                                         </div>
                                     </div>
-
                                 </div>
                             );
                         })}
@@ -614,16 +655,27 @@
         };
 
         // -----------------------------------------------------------------------------
-        // App
+        // App コンポーネント (全体の切り替え)
         // -----------------------------------------------------------------------------
         const App = () => {
             const [view, setView] = useState('parent');
             return (
                 <div className="flex justify-center bg-gray-100 min-h-screen font-sans">
-                    <div className="w-full max-w-md bg-white min-h-screen relative shadow-2xl overflow-hidden">
-                        <div className="fixed top-24 right-4 z-50 flex flex-col gap-2">
-                            <button onClick={() => setView('parent')} className={`px-4 py-2 rounded-full shadow-lg text-sm font-bold transition-all border ${view === 'parent' ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200'}`} style={{ backgroundColor: view === 'parent' ? COLORS.main : 'white' }}>保護者画面</button>
-                            <button onClick={() => setView('sitter')} className={`px-4 py-2 rounded-full shadow-lg text-sm font-bold transition-all border ${view === 'sitter' ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200'}`} style={{ backgroundColor: view === 'sitter' ? COLORS.text : 'white' }}>シッター画面</button>
+                    <div className="w-full max-w-md bg-white min-h-screen relative shadow-2xl overflow-hidden border-x border-gray-200">
+                        {/* 切り替えボタン */}
+                        <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+                            <button 
+                                onClick={() => setView('parent')} 
+                                className={`px-4 py-2 rounded-full shadow-lg text-xs font-bold transition-all border ${view === 'parent' ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200'}`} 
+                                style={{ backgroundColor: view === 'parent' ? COLORS.main : 'white' }}>
+                                保護者画面
+                            </button>
+                            <button 
+                                onClick={() => setView('sitter')} 
+                                className={`px-4 py-2 rounded-full shadow-lg text-xs font-bold transition-all border ${view === 'sitter' ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200'}`} 
+                                style={{ backgroundColor: view === 'sitter' ? COLORS.main : 'white' }}>
+                                シッター画面
+                            </button>
                         </div>
                         {view === 'parent' ? <ParentCreateView /> : <SitterListView />}
                     </div>
